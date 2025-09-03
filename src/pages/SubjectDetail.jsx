@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import api from "../api"; // Ensure this import path is correct
+import api from "../api/api"; // Ensure this import path is correct
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
@@ -23,6 +23,7 @@ function SubjectDetail() {
   const [chapterToView, setChapterToView] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // No changes needed in fetchData
   const fetchData = useCallback(async () => {
     if (!subjectId) {
       setIsLoading(false);
@@ -31,9 +32,7 @@ function SubjectDetail() {
     setIsLoading(true);
     try {
       const [subjectRes, chaptersRes] = await Promise.all([
-        // ▼▼▼ API PATH ADJUSTED HERE ▼▼▼
         api.get(`/api/v1/subjects/${subjectId}`),
-        // ▼▼▼ API PATH ADJUSTED HERE ▼▼▼
         api.get(`/api/v1/chapters/for-subject/${subjectId}`),
       ]);
       setSubject(subjectRes.data.data);
@@ -54,32 +53,21 @@ function SubjectDetail() {
     fetchData();
   }, [fetchData]);
 
-  const handleFormSubmit = async (formData) => {
-    try {
-      // ▼▼▼ API PATH ADJUSTED HERE ▼▼▼
-      await api.post(`/api/v1/chapters/for-subject/${subjectId}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      MySwal.fire({
-        icon: "success",
-        title: "Berhasil!",
-        text: "Bab berhasil dibuat.",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      fetchData();
-      closeFormModal();
-    } catch (error) {
-      console.error("Gagal menyimpan bab:", error);
-      MySwal.fire({
-        icon: "error",
-        title: "Gagal",
-        text: "Gagal menyimpan bab. Silakan coba lagi.",
-      });
-    }
+  // ▼▼▼ CHANGE #1: This function is now a simple success handler ▼▼▼
+  // The API call logic has been moved to ChapterForm.
+  const handleFormSubmitSuccess = () => {
+    MySwal.fire({
+      icon: "success",
+      title: "Berhasil!",
+      text: "Bab berhasil dibuat.",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+    fetchData(); // Refresh the data
+    closeFormModal(); // Close the modal
   };
 
+  // No changes needed in handleDeleteChapter
   const handleDeleteChapter = async (id) => {
     const result = await MySwal.fire({
       title: "Yakin ingin menghapus?",
@@ -94,7 +82,6 @@ function SubjectDetail() {
 
     if (result.isConfirmed) {
       try {
-        // ▼▼▼ API PATH ADJUSTED HERE ▼▼▼
         await api.delete(`/api/v1/chapters/${id}`);
         MySwal.fire("Dihapus!", "Bab berhasil dihapus.", "success");
         fetchData();
@@ -105,6 +92,7 @@ function SubjectDetail() {
     }
   };
 
+  // No changes needed in modal handlers
   const openFormModal = () => {
     setIsFormModalOpen(true);
   };
@@ -123,6 +111,7 @@ function SubjectDetail() {
     setChapterToView(null);
   };
 
+  // No changes needed in loading/error states
   if (isLoading) {
     return (
       <div className="flex bg-gray-100 min-h-screen">
@@ -147,7 +136,7 @@ function SubjectDetail() {
     );
   }
   
-  // The entire JSX return block is already perfect, no changes needed.
+  // The rest of the JSX is fine, only the <ChapterForm> call is changed.
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
       <Sidebar onLogout={logout} onClose={() => {}} />
@@ -224,7 +213,12 @@ function SubjectDetail() {
         onClose={closeFormModal}
         title="Tambah Bab Baru"
       >
-        <ChapterForm onSubmit={handleFormSubmit} initialData={null} />
+        {/* ▼▼▼ CHANGE #2: Update how ChapterForm is called ▼▼▼ */}
+        <ChapterForm
+          url={`/api/v1/chapters/for-subject/${subjectId}`}
+          onSubmitSuccess={handleFormSubmitSuccess}
+          initialData={null}
+        />
       </Modal>
 
       <Modal
