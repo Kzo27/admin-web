@@ -1,22 +1,28 @@
 import React, { useState, useEffect } from "react";
+import api from "../api/api"; // Make sure to import your configured axios instance
 
-function ChapterForm({ onSubmit, initialData = null }) {
+function ChapterForm({ url, onSubmitSuccess, initialData = null }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [videoFile, setVideoFile] = useState(null);
   const [pdfFile, setPdfFile] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (initialData) {
       setTitle(initialData.title || "");
       setDescription(initialData.description || "");
+      // Reset file inputs when editing
       setVideoFile(null);
       setPdfFile(null);
     }
   }, [initialData]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setUploadProgress(0); // Reset progress on new submission
 
     const formData = new FormData();
     formData.append("title", title);
@@ -27,7 +33,6 @@ function ChapterForm({ onSubmit, initialData = null }) {
     }
 
     if (pdfFile) {
-      // INI BARIS YANG DIPERBAIKI
       formData.append("document", pdfFile);
     }
 
@@ -35,7 +40,29 @@ function ChapterForm({ onSubmit, initialData = null }) {
       formData.append("_id", initialData._id);
     }
 
-    onSubmit(formData);
+    try {
+      const response = await api.post(url, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress(percentCompleted);
+        },
+      });
+      
+      // Call the success callback passed from the parent component
+      if (onSubmitSuccess) {
+        onSubmitSuccess(response.data);
+      }
+
+    } catch (error) {
+      console.error("File upload failed:", error);
+      alert("File upload failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+      // Don't reset progress to 100 here, let it fade or reset on next action
+    }
   };
 
   return (
@@ -89,12 +116,25 @@ function ChapterForm({ onSubmit, initialData = null }) {
         />
       </div>
 
+      {/* Progress Bar Display */}
+      {isSubmitting && (
+        <div className="w-full bg-gray-200 rounded-full my-2">
+          <div
+            className="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full transition-all duration-300"
+            style={{ width: `${uploadProgress}%` }}
+          >
+            {uploadProgress > 0 ? `${uploadProgress}%` : ''}
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-end gap-2 pt-4">
         <button
           type="submit"
-          className="py-2 px-6 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-300"
+          disabled={isSubmitting}
+          className="py-2 px-6 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
-          {initialData ? "Simpan Perubahan" : "Simpan"}
+          {isSubmitting ? "Mengunggah..." : (initialData ? "Simpan Perubahan" : "Simpan")}
         </button>
       </div>
     </form>
