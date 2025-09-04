@@ -1,207 +1,120 @@
 import React, { useState, useEffect } from "react";
-
-
+// Tidak perlu lagi import `api` di sini
+// import api from "../api"; // Baris ini tidak lagi diperlukan
 
 function ChapterForm({ onSubmit, initialData = null }) {
-
-  const [title, setTitle] = useState("");
-
-  const [description, setDescription] = useState("");
-
-  const [videoFile, setVideoFile] = useState(null);
-
-  const [pdfFile, setPdfFile] = useState(null);
-
-
-
-  useEffect(() => {
-
-    if (initialData) {
-
-      setTitle(initialData.title || "");
-
-      setDescription(initialData.description || "");
-
-      setVideoFile(null);
-
-      setPdfFile(null);
-
-    }
-
-  }, [initialData]);
-
-
-
-  const handleSubmit = (e) => {
-
-    e.preventDefault();
-
-
-
-    const formData = new FormData();
-
-    formData.append("title", title);
-
-    formData.append("description", description);
-
-
-
-    if (videoFile) {
-
-      formData.append("video", videoFile);
-
-    }
-
-
-
-    if (pdfFile) {
-
-      // INI BARIS YANG DIPERBAIKI
-
-      formData.append("document", pdfFile);
-
-    }
-
-
-
-    if (initialData?._id) {
-
-      formData.append("_id", initialData._id);
-
-    }
-
-
-
-    onSubmit(formData);
-
-  };
-
-
-
-  return (
-
-    <form onSubmit={handleSubmit} className="space-y-4">
-
-      <div>
-
-        <label className="block text-sm font-medium text-gray-700">
-
-          Judul Bab
-
-        </label>
-
-        <input
-
-          type="text"
-
-          value={title}
-
-          onChange={(e) => setTitle(e.target.value)}
-
-          placeholder="Masukkan judul bab..."
-
-          required
-
-          className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-
-        />
-
-      </div>
-
-      <div>
-
-        <label className="block text-sm font-medium text-gray-700">
-
-          Deskripsi
-
-        </label>
-
-        <textarea
-
-          value={description}
-
-          onChange={(e) => setDescription(e.target.value)}
-
-          placeholder="Deskripsi singkat tentang bab..."
-
-          rows="4"
-
-          className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-
-        />
-
-      </div>
-
-      <div>
-
-        <label className="block text-sm font-medium text-gray-700">
-
-          Unggah Video
-
-        </label>
-
-        <input
-
-          type="file"
-
-          accept="video/*"
-
-          onChange={(e) => setVideoFile(e.target.files[0])}
-
-          className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-
-        />
-
-      </div>
-
-
-
-      <div>
-
-        <label className="block text-sm font-medium text-gray-700">
-
-          Unggah PDF (Opsional)
-
-        </label>
-
-        <input
-
-          type="file"
-
-          accept="application/pdf"
-
-          onChange={(e) => setPdfFile(e.target.files[0])}
-
-          className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-
-        />
-
-      </div>
-
-
-
-      <div className="flex justify-end gap-2 pt-4">
-
-        <button
-
-          type="submit"
-
-          className="py-2 px-6 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-300"
-
-        >
-
-          {initialData ? "Simpan Perubahan" : "Simpan"}
-
-        </button>
-
-      </div>
-
-    </form>
-
-  );
-
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [videoFile, setVideoFile] = useState(null);
+  const [pdfFile, setPdfFile] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false); // State untuk status pengiriman
+
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title || "");
+      setDescription(initialData.description || "");
+      setVideoFile(null);
+      setPdfFile(null);
+    }
+  }, [initialData]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+
+    if (videoFile) {
+      formData.append("video", videoFile);
+    }
+
+    if (pdfFile) {
+      formData.append("document", pdfFile);
+    }
+
+    if (initialData?._id) {
+      formData.append("_id", initialData._id);
+    }
+
+    // Panggil fungsi `onSubmit` dari parent component dengan `formData`
+    // Parent component yang akan menangani proses API (termasuk unggahan)
+    await onSubmit(formData);
+    
+    setIsSubmitting(false); // Selesai
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Judul Bab
+        </label>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Masukkan judul bab..."
+          required
+          className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Deskripsi
+        </label>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Deskripsi singkat tentang bab..."
+          rows="4"
+          className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Unggah Video
+        </label>
+        <input
+          type="file"
+          accept="video/*"
+          onChange={(e) => setVideoFile(e.target.files[0])}
+          className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          disabled={isSubmitting} // Nonaktifkan saat mengunggah
+        />
+        {/* Hapus bar progres di sini */}
+        {/* {isUploading && ( ... )} */}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Unggah PDF (Opsional)
+        </label>
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => setPdfFile(e.target.files[0])}
+          className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          disabled={isSubmitting} // Nonaktifkan saat mengunggah
+        />
+      </div>
+
+      <div className="flex justify-end gap-2 pt-4">
+        <button
+          type="submit"
+          className="py-2 px-6 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-300 disabled:opacity-50"
+          disabled={isSubmitting} // Nonaktifkan tombol saat mengunggah
+        >
+          {isSubmitting
+            ? "Mengunggah..."
+            : initialData
+            ? "Simpan Perubahan"
+            : "Simpan"}
+        </button>
+      </div>
+    </form>
+  );
 }
-
-
 
 export default ChapterForm;
