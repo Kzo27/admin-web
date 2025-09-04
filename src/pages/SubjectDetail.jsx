@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import api from "../api"; // Ensure this import path is correct
+import api from "../api";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
@@ -23,6 +23,10 @@ function SubjectDetail() {
   const [chapterToView, setChapterToView] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // ▼▼▼ STATE BARU UNTUK PROGRES UNGGAHAN ▼▼▼
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
   const fetchData = useCallback(async () => {
     if (!subjectId) {
       setIsLoading(false);
@@ -31,9 +35,7 @@ function SubjectDetail() {
     setIsLoading(true);
     try {
       const [subjectRes, chaptersRes] = await Promise.all([
-        // ▼▼▼ API PATH ADJUSTED HERE ▼▼▼
         api.get(`/api/v1/subjects/${subjectId}`),
-        // ▼▼▼ API PATH ADJUSTED HERE ▼▼▼
         api.get(`/api/v1/chapters/for-subject/${subjectId}`),
       ]);
       setSubject(subjectRes.data.data);
@@ -54,11 +56,22 @@ function SubjectDetail() {
     fetchData();
   }, [fetchData]);
 
+  // ▼▼▼ FUNGSI INI DIMODIFIKASI UNTUK MENANGANI PROGRES UNGGAHAN ▼▼▼
   const handleFormSubmit = async (formData) => {
+    // Awal proses unggah
+    setIsUploading(true);
+    setUploadProgress(0);
+
     try {
-      // ▼▼▼ API PATH ADJUSTED HERE ▼▼▼
       await api.post(`/api/v1/chapters/for-subject/${subjectId}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
+        // Opsi khusus Axios untuk melacak progres unggahan
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress(percentCompleted);
+        },
       });
 
       MySwal.fire({
@@ -77,6 +90,10 @@ function SubjectDetail() {
         title: "Gagal",
         text: "Gagal menyimpan bab. Silakan coba lagi.",
       });
+    } finally {
+      // Unggah selesai, reset state
+      setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -94,7 +111,6 @@ function SubjectDetail() {
 
     if (result.isConfirmed) {
       try {
-        // ▼▼▼ API PATH ADJUSTED HERE ▼▼▼
         await api.delete(`/api/v1/chapters/${id}`);
         MySwal.fire("Dihapus!", "Bab berhasil dihapus.", "success");
         fetchData();
@@ -146,8 +162,7 @@ function SubjectDetail() {
       </div>
     );
   }
-  
-  // The entire JSX return block is already perfect, no changes needed.
+
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
       <Sidebar onLogout={logout} onClose={() => {}} />
@@ -219,12 +234,26 @@ function SubjectDetail() {
         </div>
       </main>
 
+      {/* ▼▼▼ MODAL DIMODIFIKASI UNTUK MENAMPILKAN PROGRES ▼▼▼ */}
       <Modal
         isOpen={isFormModalOpen}
         onClose={closeFormModal}
-        title="Tambah Bab Baru"
+        title={isUploading ? "Mengunggah..." : "Tambah Bab Baru"}
       >
         <ChapterForm onSubmit={handleFormSubmit} initialData={null} />
+        {isUploading && (
+          <div className="mt-4">
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div
+                className="bg-blue-600 h-2.5 rounded-full"
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+            </div>
+            <p className="text-center mt-1 text-sm text-gray-600">
+              {uploadProgress}% Selesai
+            </p>
+          </div>
+        )}
       </Modal>
 
       <Modal
