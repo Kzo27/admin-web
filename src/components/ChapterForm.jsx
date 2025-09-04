@@ -1,144 +1,207 @@
 import React, { useState, useEffect } from "react";
-import api from "../api/api"; // Make sure to import your configured axios instance
 
-function ChapterForm({ url, onSubmitSuccess, initialData = null }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [videoFile, setVideoFile] = useState(null);
-  const [pdfFile, setPdfFile] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (initialData) {
-      setTitle(initialData.title || "");
-      setDescription(initialData.description || "");
-      // Reset file inputs when editing
-      setVideoFile(null);
-      setPdfFile(null);
-    }
-  }, [initialData]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setUploadProgress(0); // Reset progress on new submission
+function ChapterForm({ onSubmit, initialData = null }) {
 
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
+  const [title, setTitle] = useState("");
 
-    if (videoFile) {
-      formData.append("video", videoFile);
-    }
+  const [description, setDescription] = useState("");
 
-    if (pdfFile) {
-      formData.append("document", pdfFile);
-    }
+  const [videoFile, setVideoFile] = useState(null);
 
-    if (initialData?._id) {
-      formData.append("_id", initialData._id);
-    }
+  const [pdfFile, setPdfFile] = useState(null);
 
-    try {
-      const response = await api.post(url, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setUploadProgress(percentCompleted);
-        },
-      });
-      
-      // Call the success callback passed from the parent component
-      if (onSubmitSuccess) {
-        onSubmitSuccess(response.data);
-      }
 
-    } catch (error) {
-      console.error("File upload failed:", error);
-      alert("File upload failed. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-      // Don't reset progress to 100 here, let it fade or reset on next action
-    }
-  };
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Judul Bab
-        </label>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Masukkan judul bab..."
-          required
-          className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Deskripsi
-        </label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Deskripsi singkat tentang bab..."
-          rows="4"
-          className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Unggah Video
-        </label>
-        <input
-          type="file"
-          accept="video/*"
-          onChange={(e) => setVideoFile(e.target.files[0])}
-          className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-        />
-      </div>
+  useEffect(() => {
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Unggah PDF (Opsional)
-        </label>
-        <input
-          type="file"
-          accept="application/pdf"
-          onChange={(e) => setPdfFile(e.target.files[0])}
-          className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-        />
-      </div>
+    if (initialData) {
 
-      {/* Progress Bar Display */}
-      {isSubmitting && (
-        <div className="w-full bg-gray-200 rounded-full my-2">
-          <div
-            className="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full transition-all duration-300"
-            style={{ width: `${uploadProgress}%` }}
-          >
-            {uploadProgress > 0 ? `${uploadProgress}%` : ''}
-          </div>
-        </div>
-      )}
+      setTitle(initialData.title || "");
 
-      <div className="flex justify-end gap-2 pt-4">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="py-2 px-6 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? "Mengunggah..." : (initialData ? "Simpan Perubahan" : "Simpan")}
-        </button>
-      </div>
-    </form>
-  );
+      setDescription(initialData.description || "");
+
+      setVideoFile(null);
+
+      setPdfFile(null);
+
+    }
+
+  }, [initialData]);
+
+
+
+  const handleSubmit = (e) => {
+
+    e.preventDefault();
+
+
+
+    const formData = new FormData();
+
+    formData.append("title", title);
+
+    formData.append("description", description);
+
+
+
+    if (videoFile) {
+
+      formData.append("video", videoFile);
+
+    }
+
+
+
+    if (pdfFile) {
+
+      // INI BARIS YANG DIPERBAIKI
+
+      formData.append("document", pdfFile);
+
+    }
+
+
+
+    if (initialData?._id) {
+
+      formData.append("_id", initialData._id);
+
+    }
+
+
+
+    onSubmit(formData);
+
+  };
+
+
+
+  return (
+
+    <form onSubmit={handleSubmit} className="space-y-4">
+
+      <div>
+
+        <label className="block text-sm font-medium text-gray-700">
+
+          Judul Bab
+
+        </label>
+
+        <input
+
+          type="text"
+
+          value={title}
+
+          onChange={(e) => setTitle(e.target.value)}
+
+          placeholder="Masukkan judul bab..."
+
+          required
+
+          className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+
+        />
+
+      </div>
+
+      <div>
+
+        <label className="block text-sm font-medium text-gray-700">
+
+          Deskripsi
+
+        </label>
+
+        <textarea
+
+          value={description}
+
+          onChange={(e) => setDescription(e.target.value)}
+
+          placeholder="Deskripsi singkat tentang bab..."
+
+          rows="4"
+
+          className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+
+        />
+
+      </div>
+
+      <div>
+
+        <label className="block text-sm font-medium text-gray-700">
+
+          Unggah Video
+
+        </label>
+
+        <input
+
+          type="file"
+
+          accept="video/*"
+
+          onChange={(e) => setVideoFile(e.target.files[0])}
+
+          className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+
+        />
+
+      </div>
+
+
+
+      <div>
+
+        <label className="block text-sm font-medium text-gray-700">
+
+          Unggah PDF (Opsional)
+
+        </label>
+
+        <input
+
+          type="file"
+
+          accept="application/pdf"
+
+          onChange={(e) => setPdfFile(e.target.files[0])}
+
+          className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+
+        />
+
+      </div>
+
+
+
+      <div className="flex justify-end gap-2 pt-4">
+
+        <button
+
+          type="submit"
+
+          className="py-2 px-6 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-300"
+
+        >
+
+          {initialData ? "Simpan Perubahan" : "Simpan"}
+
+        </button>
+
+      </div>
+
+    </form>
+
+  );
+
 }
+
+
 
 export default ChapterForm;
