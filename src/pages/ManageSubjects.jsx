@@ -139,7 +139,7 @@ function ManageSubjects() {
                     <h3 className="text-xl font-bold text-gray-900 mb-2">
                       {subject.title}
                     </h3>
-                    <p className="text-gray-600 text-sm mb-4">
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                       {subject.description}
                     </p>
                   </div>
@@ -187,5 +187,6 @@ function ManageSubjects() {
     </div>
   );
 }
+
 
 export default ManageSubjects;
