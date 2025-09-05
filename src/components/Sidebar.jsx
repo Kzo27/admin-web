@@ -82,19 +82,22 @@ function Sidebar({ isOpen, onClose, onLogout }) {
           </NavLink>
 
           <NavLink to="/users" onClick={onClose} className={getNavLinkClass}>
+            {/* Awal bagian yang diubah */}
             <svg
               className="w-5 h-5 mr-3"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
             >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth="2"
-                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21a6 6 0 00-9-5.197m0 0A5.975 5.975 0 0112 13a5.975 5.975 0 016-5.197M15 21a6 6 0 00-9-5.197"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21a6 6 0 00-9-5.197m0 0A5.975 5.975 0 0112 13a5.975 5.975 0 016-5.197"
               ></path>
             </svg>
+            {/* Akhir bagian yang diubah */}
             Manajemen Pengguna
           </NavLink>
           <NavLink to="/info" onClick={onClose} className={getNavLinkClass}>
@@ -154,4 +157,5 @@ Sidebar.defaultProps = {
 };
 
 export default Sidebar;
+
 
