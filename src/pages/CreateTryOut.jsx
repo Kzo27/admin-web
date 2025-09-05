@@ -8,6 +8,11 @@ import withReactContent from "sweetalert2-react-content";
 
 const MySwal = withReactContent(Swal);
 
+// ✅ PERBAIKAN 1: Fungsi untuk membuat ID unik sederhana
+const generateUniqueId = () => {
+  return Date.now() + Math.random().toString(36).substr(2, 9);
+};
+
 function CreateTryOut() {
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -17,6 +22,8 @@ function CreateTryOut() {
   const [duration, setDuration] = useState(60);
   const [questions, setQuestions] = useState([
     {
+      // ✅ PERBAIKAN 2: Tambahkan ID pada pertanyaan pertama
+      id: generateUniqueId(),
       question: "",
       options: ["", "", "", "", ""],
       correctAnswer: "",
@@ -25,6 +32,7 @@ function CreateTryOut() {
   ]);
   const [loading, setLoading] = useState(false);
 
+  // ... (handleQuestionChange dan handleOptionChange tidak perlu diubah) ...
   const handleQuestionChange = (qIndex, field, value) => {
     const newQuestions = [...questions];
     newQuestions[qIndex][field] = value;
@@ -37,10 +45,13 @@ function CreateTryOut() {
     setQuestions(newQuestions);
   };
 
+
   const addQuestion = () => {
     setQuestions([
       ...questions,
       {
+        // ✅ PERBAIKAN 3: Tambahkan ID saat menambah pertanyaan baru
+        id: generateUniqueId(),
         question: "",
         options: ["", "", "", "", ""],
         correctAnswer: "",
@@ -77,8 +88,9 @@ function CreateTryOut() {
     }
 
     try {
+      // ✅ PERBAIKAN 4: Pastikan field 'id' juga ikut terkirim
+      // Tidak perlu ada perubahan di sini, karena 'questions' sudah mengandung 'id'
       const tryoutData = { title, description, duration, questions };
-      // ▼▼▼ API PATH ADJUSTED HERE ▼▼▼
       await api.post("/api/v1/tryouts", tryoutData);
       MySwal.fire("Berhasil!", "Paket Try Out berhasil dibuat!", "success");
       navigate("/tryouts");
@@ -94,11 +106,10 @@ function CreateTryOut() {
     }
   };
 
-  // The entire JSX return block is already perfect, no changes needed.
   return (
+    // ... (Seluruh bagian JSX/HTML tidak perlu diubah sama sekali) ...
     <div className="flex bg-gray-100 h-screen overflow-hidden">
       <Sidebar onLogout={logout} onClose={() => {}} />
-
       <div className="flex-1 flex flex-col">
         <header className="bg-white border-b border-gray-200 p-4 sm:p-6 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">
@@ -111,7 +122,6 @@ function CreateTryOut() {
             &larr; Kembali
           </Link>
         </header>
-
         <form
           onSubmit={handleSubmit}
           className="flex-1 flex flex-col overflow-hidden"
@@ -178,7 +188,6 @@ function CreateTryOut() {
                     </div>
                   </div>
                 </div>
-
                 <div className="lg:border-l lg:border-gray-200 lg:pl-8">
                   <h2 className="text-xl font-semibold text-gray-800 mb-4">
                     Buat Pertanyaan
@@ -186,7 +195,8 @@ function CreateTryOut() {
                   <div className="space-y-6">
                     {questions.map((q, qIndex) => (
                       <div
-                        key={qIndex}
+                        // ✅ PERBAIKAN 5: Gunakan ID unik sebagai 'key' untuk performa lebih baik
+                        key={q.id}
                         className="bg-gray-50 p-6 rounded-md border border-gray-200 space-y-4"
                       >
                         <div className="flex justify-between items-center">
@@ -302,7 +312,6 @@ function CreateTryOut() {
               </div>
             </div>
           </div>
-
           <div className="p-4 bg-white border-t border-gray-200">
             <button
               type="submit"
