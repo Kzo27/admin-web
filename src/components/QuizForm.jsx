@@ -45,12 +45,12 @@ function QuizForm({ onSubmit, onClose, initialData = null }) {
       <div className="flex flex-col space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">Pertanyaan</label>
-          <input
-            type="text"
+          <textarea
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             placeholder="Tuliskan pertanyaan di sini..."
             required
+            rows="4" 
             className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -118,5 +118,6 @@ function QuizForm({ onSubmit, onClose, initialData = null }) {
     </form>
   );
 }
+
 
 export default QuizForm;
