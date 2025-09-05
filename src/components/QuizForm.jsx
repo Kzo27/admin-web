@@ -13,12 +13,24 @@ function QuizForm({ onSubmit, onClose, initialData = null }) {
       setCorrectAnswer(initialData.correctAnswer || '');
       setExplanation(initialData.explanation || '');
     } else {
+      // Reset form for new entry
       setQuestion('');
       setOptions(['', '', '', '', '']);
       setCorrectAnswer('');
       setExplanation('');
     }
   }, [initialData]);
+  
+  // ✅ PERBAIKAN 1: Tambahkan useEffect untuk mereset jawaban benar 
+  // jika opsi yang dipilih diubah atau dihapus.
+  useEffect(() => {
+    // Jika jawaban benar yang tersimpan saat ini sudah tidak ada lagi di dalam daftar pilihan,
+    // maka reset pilihan dropdown.
+    if (correctAnswer && !options.includes(correctAnswer)) {
+      setCorrectAnswer('');
+    }
+  }, [options, correctAnswer]);
+
 
   const handleOptionChange = (index, value) => {
     const newOptions = [...options];
@@ -35,13 +47,10 @@ function QuizForm({ onSubmit, onClose, initialData = null }) {
       correctAnswer,
       explanation,
     });
-    
-    // HAPUS PANGGILAN onClose() DI SINI
   };
 
   return (
     <form onSubmit={handleSubmit} className="p-4 space-y-4">
-      {/*... (Formulir Anda) */}
       <div className="flex flex-col space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">Pertanyaan</label>
@@ -50,12 +59,11 @@ function QuizForm({ onSubmit, onClose, initialData = null }) {
             onChange={(e) => setQuestion(e.target.value)}
             placeholder="Tuliskan pertanyaan di sini..."
             required
-            rows="4" 
+            rows="4"
             className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         
-        {/* Pilihan Jawaban */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Pilihan Jawaban</label>
           <div className="space-y-2 mt-1">
@@ -73,20 +81,27 @@ function QuizForm({ onSubmit, onClose, initialData = null }) {
           </div>
         </div>
 
-        {/* Jawaban Benar */}
+        {/* ✅ PERBAIKAN 2: Ubah input teks menjadi dropdown select */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Jawaban Benar</label>
-          <input
-            type="text"
+          <label htmlFor="correct-answer" className="block text-sm font-medium text-gray-700">Jawaban Benar</label>
+          <select
+            id="correct-answer"
             value={correctAnswer}
             onChange={(e) => setCorrectAnswer(e.target.value)}
-            placeholder="Masukkan jawaban yang benar..."
             required
-            className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
+            className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+          >
+            <option value="" disabled>-- Pilih Jawaban Benar --</option>
+            {options
+              .filter(opt => opt && opt.trim() !== '') // Hanya tampilkan opsi yang sudah diisi
+              .map((option, index) => (
+                <option key={index} value={option}>
+                  {`Opsi ${String.fromCharCode(65 + index)}: ${option}`}
+                </option>
+              ))}
+          </select>
         </div>
 
-        {/* Pembahasan */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Pembahasan (opsional)</label>
           <textarea
@@ -98,7 +113,6 @@ function QuizForm({ onSubmit, onClose, initialData = null }) {
           />
         </div>
 
-        {/* Tombol Aksi */}
         <div className="flex gap-2 justify-end pt-4">
           <button
             type="button"
@@ -118,6 +132,5 @@ function QuizForm({ onSubmit, onClose, initialData = null }) {
     </form>
   );
 }
-
 
 export default QuizForm;
