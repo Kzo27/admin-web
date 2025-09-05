@@ -57,7 +57,7 @@ function Dashboard() {
         <header className="mb-10">
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
           <p className="mt-1 text-lg text-gray-600">
-            Selamat Datang kembali, {user ? user.name : "Pengguna"}!
+            Selamat Datang, {user ? user.name : "Pengguna"}!
           </p>
         </header>
 
@@ -193,3 +193,4 @@ function Dashboard() {
 }
 
 export default Dashboard;
+
