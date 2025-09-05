@@ -192,7 +192,7 @@ function SubjectDetail() {
                       <h3 className="text-lg font-bold text-gray-800">
                         {chapter.title}
                       </h3>
-                      <p className="text-gray-600 mt-1 text-sm line-clamp-2">
+                      <p className="text-gray-600 mt-1 text-sm line-clamp-1">
                         {chapter.description}
                       </p>
                     </div>
@@ -268,3 +268,4 @@ function SubjectDetail() {
 }
 
 export default SubjectDetail;
+
