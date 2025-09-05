@@ -27,7 +27,7 @@ function Sidebar({ isOpen, onClose, onLogout }) {
         } transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:flex md:flex-col`}
       >
         <div className="flex items-center justify-center h-16 text-xl font-bold text-gray-800 border-b border-gray-200">
-          E Pharmacy
+          UKAI Primavia 
         </div>
         <nav className="flex-1 p-4 space-y-2">
           <NavLink end to="/" onClick={onClose} className={getNavLinkClass}>
@@ -157,6 +157,7 @@ Sidebar.defaultProps = {
 };
 
 export default Sidebar;
+
 
 
 
